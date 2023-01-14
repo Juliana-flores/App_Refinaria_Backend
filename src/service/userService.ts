@@ -1,3 +1,4 @@
+import * as md5 from "md5";
 import type {
   DriverVehicleRepository,
   ProfileRepository,
@@ -62,7 +63,7 @@ export class UserService {
       driverCode: profile.driverCode,
       document: profile.document,
       username: profile.document,
-      password: profile.document,
+      password: md5(profile.document),
       name: profile.name,
       trucks,
     };

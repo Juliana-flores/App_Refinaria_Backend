@@ -1,13 +1,22 @@
-import { Entity, PrimaryColumn, Column } from 'typeorm';
+import { ViewEntity, ViewColumn } from "typeorm";
 
-@Entity('SAT_APP_INTERVALO')
+@ViewEntity({
+  name: "SAT_APP_VIEW_INTERVALO",
+  expression: `
+  SELECT 
+    "SAT_FAIXA"."COD_FAIXA" as "id",
+    "SAT_FAIXA"."INICIO" as "start",
+    "SAT_FAIXA"."FIM" as "end"
+  FROM "SAT_FAIXA"
+  `,
+})
 export default class TimeRange {
-  @PrimaryColumn()
+  @ViewColumn()
   id: number;
 
-  @Column()
+  @ViewColumn()
   start: string;
 
-  @Column()
+  @ViewColumn()
   end: string;
 }
