@@ -4,16 +4,19 @@ import type {
   ScheduleRepository,
   QueueRepository,
   TruckRepository,
-} from '../repos';
-import type { NextFunction, Request, Response } from 'express';
+} from "../repos";
 
-import { isWithinInterval, parse } from 'date-fns';
+import type { Request, Response } from "express";
+
+import { parse } from "date-fns";
+
+import type { Queue } from "../models";
 
 enum ErrorMessage {
-  badRequest = 'Parâmetros necessários: latitude, longitude e placa do caminhão.',
-  outOfStock = 'Impossível realizar carregamento. Favor, diriga-se ao totem.',
-  outOfInterval = 'Intervalo indisponível para atendimento',
-  notFound = 'Caminhão não encontrado ou cadastrado.',
+  badRequest = "Parâmetros necessários: latitude, longitude e placa do caminhão.",
+  outOfStock = "Impossível realizar carregamento. Favor, diriga-se ao totem.",
+  outOfInterval = "Intervalo indisponível para atendimento",
+  notFound = "Caminhão não encontrado ou cadastrado.",
 }
 
 interface QueueControllersOptions {
@@ -44,45 +47,6 @@ export default class QueueController {
     this.truckRepository = truckRepository;
   }
 
-  params(request: Request, response: Response, next: NextFunction) {
-    const { plateCarriage, lat, lon } = request.body;
-
-    if (!plateCarriage || !lat || !lon) {
-      return response.status(400).send({ message: ErrorMessage.badRequest });
-    }
-
-    return next();
-  }
-
-  async truck(request: Request, response: Response, next: NextFunction) {
-    const { plateCarriage } = request.body;
-    const truck = await this.truckRepository.findOneByLicensePlate(plateCarriage);
-
-    if (!truck) {
-      return response.status(400).send({ message: ErrorMessage.notFound });
-    }
-
-    request.body.truck = truck;
-
-    return next();
-  }
-
-  async interval(request: Request, response: Response, next: NextFunction) {
-    const intervals = await this.timeRangeRepository.intervals();
-    // request.body.timestamp = new Date();
-    request.body.timestamp = parse('12:00', 'HH:mm', new Date());
-
-    const isWithinAnyInterval = intervals.some((interval) =>
-      isWithinInterval(request.body.timestamp, interval)
-    );
-
-    if (!isWithinAnyInterval) {
-      return response.status(400).send(new Error(ErrorMessage.outOfInterval));
-    }
-
-    return next();
-  }
-
   async schedule(request: Request, response: Response): Promise<Response> {
     const { plateCarriage, lat, lon } = request.body;
 
@@ -90,45 +54,47 @@ export default class QueueController {
       return response.status(400).send({ message: ErrorMessage.badRequest });
     }
 
-    const truck = await this.truckRepository.findOneByLicensePlate(plateCarriage);
+    const truck = await this.truckRepository.findOneByLicensePlate(
+      plateCarriage
+    );
 
     if (!truck) {
       return response.status(400).send({ message: ErrorMessage.notFound });
     }
 
-    const intervals = await this.timeRangeRepository.intervals();
+    const timestamp = parse("12:00", "HH:mm", new Date());
 
-    const timestamp = parse('12:00', 'HH:mm', new Date());
     //const timestamp = new Date();
 
-    const isWithinAnyInterval = intervals.some((interval) => isWithinInterval(timestamp, interval));
+    const isWithinAnyInterval = await this.timeRangeRepository.intervals(
+      timestamp
+    );
 
     if (!isWithinAnyInterval) {
       return response.status(400).send({ message: ErrorMessage.outOfInterval });
     }
 
-    const currentDay = parse('21/06/2019', 'dd/MM/yyyy', new Date());
+    const currentDay = parse("21/06/2019", "dd/MM/yyyy", new Date());
 
-    const schedule = await this.scheduleRepository.findByPlateCarriage(plateCarriage, currentDay);
+    const schedule = await this.scheduleRepository.findByPlateCarriage(
+      plateCarriage,
+      currentDay
+    );
 
     if (!schedule) {
       return response.status(400).json({ message: ErrorMessage.outOfStock });
     }
 
-    const location = await this.locationRepository.create({
+    const location = await this.locationRepository.createAndSave({
       lon,
       lat,
     });
 
-    await this.locationRepository.save(location);
-
-    const queueEntry = await this.queueRepository.create({
+    const { id: position }: Queue = await this.queueRepository.createAndSave({
       timestamp,
       location,
       truck,
     });
-
-    const { id: position } = await this.queueRepository.save(queueEntry);
 
     const output = {
       position,

@@ -1,12 +1,18 @@
-import { availableProducts, availableStatus, productName, statusName } from '../models/schedule';
-import { startOfDay, endOfDay } from 'date-fns';
-import { Between, Equal, In } from 'typeorm';
-import { Schedule } from '../models';
+import { startOfDay, endOfDay } from "date-fns";
+import { Between, Equal, In } from "typeorm";
+import type { Repository } from "typeorm";
 
-import type { Repository, FindOperator } from 'typeorm';
-import type Cursor from '../database/cursor';
+import TemplateRepository from "./templateRepository";
+import type Cursor from "../database/cursor";
 
-import TemplateRepository from './templateRepository';
+import {
+  availableProducts,
+  availableStatus,
+  productName,
+  statusName,
+} from "../models/schedule";
+
+import { Schedule } from "../models";
 
 const Today =
   /**
@@ -60,8 +66,8 @@ export default class ScheduleRepository extends TemplateRepository<Schedule> {
         }
         return {
           ...schedule,
-          product: productName.get(schedule.product) || '',
-          status: statusName.get(schedule.status) || '',
+          product: productName.get(schedule.product) || "",
+          status: statusName.get(schedule.status) || "",
         };
       });
   }

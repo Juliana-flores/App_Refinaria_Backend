@@ -1,13 +1,13 @@
-import type  Cursor  from '../database/cursor';
-import type { Repository } from 'typeorm';
+import type { Repository } from "typeorm";
 
-import { Queue } from '../models';
+import TemplateRepository from "./templateRepository";
+import type Cursor from "../database/cursor";
 
-import TemplateRepository from './templateRepository';
+import { Queue } from "../models";
 
-export default class QueueRepository extends TemplateRepository<Queue>{
+export default class QueueRepository extends TemplateRepository<Queue> {
   repository: Repository<Queue>;
   constructor(cursor: Cursor) {
-    super(cursor, Queue); 
+    super(cursor, Queue);
   }
 }

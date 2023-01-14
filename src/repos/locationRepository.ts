@@ -1,13 +1,13 @@
-import type  Cursor  from '../database/cursor';
-import type { Repository } from 'typeorm';
+import type { Repository } from "typeorm";
 
-import { Location } from '../models';
+import TemplateRepository from "./templateRepository";
+import type Cursor from "../database/cursor";
 
-import TemplateRepository from './templateRepository';
+import { Location } from "../models";
 
-export default class LocationRepository extends TemplateRepository<Location>{
+export default class LocationRepository extends TemplateRepository<Location> {
   repository: Repository<Location>;
   constructor(cursor: Cursor) {
-    super(cursor, Location); 
+    super(cursor, Location);
   }
 }

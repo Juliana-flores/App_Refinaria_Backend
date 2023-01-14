@@ -1,22 +1,31 @@
-import * as express from 'express';
+import * as express from "express";
+import * as cors from "cors";
+import helmet from "helmet";
 
-import env from './config/env';
-import Cursor from './database/cursor';
-import * as cors from "cors"
-import Routes from './routes';
+import Cursor from "./database/cursor";
+import env from "./config/env";
+import Routes from "./routes";
 
 // create and setup express app
 (async () => {
-  const app = express();
-  const cursor = new Cursor();
-  await cursor.connect();
+  try {
+    const app = express();
 
-  app.use(express.json());
-  app.use(cors())
+    const cursor = new Cursor({ ...env.databaseCredentials });
+    await cursor.connect();
 
-  app.use(Routes(cursor));
+    app.use(express.json());
+    app.use(helmet());
+    app.use(cors());
 
-  app.listen(env.serverParams.port, () => {
-    console.log(`⚡️[server]: Server is running at https://localhost:${env.serverParams.port}`);
-  });
+    app.use(Routes(cursor));
+
+    app.listen(env.serverParams.port, () => {
+      console.info(
+        `⚡️[server]: Server is running at ${env.serverParams.port}`
+      );
+    });
+  } catch (error) {
+    console.error(error);
+  }
 })();

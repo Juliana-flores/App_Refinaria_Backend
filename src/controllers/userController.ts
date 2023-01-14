@@ -1,22 +1,14 @@
-import type { DriverRepository, TruckRepository } from '../repos';
+import type { DriverRepository, TruckRepository } from "../repos";
+import type { UserService } from "../service/userService";
 
-import { compare } from '../helpers/password';
-import { Request, Response } from 'express';
-import { sign } from 'jsonwebtoken';
+import { compare } from "../helpers/password";
+import { Request, Response } from "express";
+import { sign } from "jsonwebtoken";
 
 export default class UserController {
-  driverRepository: DriverRepository;
-  truckRepository: TruckRepository;
   secret: string;
 
-  constructor(
-    driverRepository: DriverRepository,
-    truckRepository: TruckRepository,
-    serverParams: any
-  ) {
-    this.driverRepository = driverRepository;
-    this.truckRepository = truckRepository;
-
+  constructor(private userService: UserService, serverParams: any) {
     this.secret = serverParams.secret;
   }
 
@@ -26,7 +18,7 @@ export default class UserController {
       return res.sendStatus(400);
     }
 
-    const user = await this.driverRepository.findByUsername(username);
+    const user = await this.userService.findByUsername(username);
 
     if (!user) {
       return res.sendStatus(404);
@@ -46,7 +38,7 @@ export default class UserController {
       },
       this.secret,
       {
-        expiresIn: '1h',
+        expiresIn: "1h",
       }
     );
 

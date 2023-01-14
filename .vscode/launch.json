@@ -1,0 +1,11 @@
+{
+  "configurations": [
+    {
+      "command": "npm run watch",
+      "name": "Debug terminal",
+      "request": "launch",
+      "type": "node-terminal",
+      "outputCapture": "std"
+    }
+  ]
+}

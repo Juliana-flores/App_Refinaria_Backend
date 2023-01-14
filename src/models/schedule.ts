@@ -1,33 +1,33 @@
-import { ViewEntity, ViewColumn } from 'typeorm';
+import { ViewEntity, ViewColumn } from "typeorm";
 
 export const availableProducts = [11, 17, 52];
 export const availableStatus = [7];
 
 export const statusName = new Map([
-  [1, 'Agendado'],
-  [2, 'Passou toten'],
-  [3, 'Passou Drivein'],
-  [4, 'Saída Drivein'],
-  [5, 'Cancelado'],
-  [6, 'Checklist'],
-  [7, 'Pátio externo'],
-  [8, 'Retirado da fila'],
-  [9, 'Carregado'],
-  [10, 'Checklist concluído'],
-  [11, 'Liberado lacres'],
+  [1, "Agendado"],
+  [2, "Passou toten"],
+  [3, "Passou Drivein"],
+  [4, "Saída Drivein"],
+  [5, "Cancelado"],
+  [6, "Checklist"],
+  [7, "Pátio externo"],
+  [8, "Retirado da fila"],
+  [9, "Carregado"],
+  [10, "Checklist concluído"],
+  [11, "Liberado lacres"],
 ]);
 
 // 11 => DIS10-T
 // 17 => GA
 // 52 => GC
 export const productName = new Map([
-  [11, 'DIS10-T'],
-  [17, 'GA'],
-  [52, 'GC'],
+  [11, "DIS10-T"],
+  [17, "GA"],
+  [52, "GC"],
 ]);
 
 @ViewEntity({
-  name: 'SAT_APP_VIEW_AGENDA',
+  name: "SAT_APP_VIEW_AGENDA",
   expression: `
 SELECT
   "SAT_AGENDA"."NUM_AGENDA"       AS "id",
@@ -35,10 +35,12 @@ SELECT
   "SAT_AGENDA"."COD_MOTORISTA"    AS "driverCode",
   "SAT_AGENDA"."DATA"             AS "eventAt",
   "SAT_AGENDA"."COD_STATUS"       AS "status",
-  "SAT_AGENDA_COMP"."COD_PRODUTO" AS "product"
+  "SAT_AGENDA_COMP"."COD_PRODUTO" AS "product",
+  "SAT_PERFIL"."DESCRICAO"        AS "description"
 FROM
-       "SAT_AGENDA"
-  INNER JOIN "SAT_AGENDA_COMP" ON "SAT_AGENDA"."NUM_AGENDA" = "SAT_AGENDA_COMP"."NUM_AGENDA"
+  "SAT_AGENDA"
+INNER JOIN "SAT_AGENDA_COMP" ON "SAT_AGENDA"."NUM_AGENDA" = "SAT_AGENDA_COMP"."NUM_AGENDA"
+INNER JOIN "SAT_PERFIL" ON "SAT_AGENDA"."COD_PERFIL" = "SAT_PERFIL"."COD_PERFIL"
 `,
 })
 export default class Schedule {
@@ -59,4 +61,7 @@ export default class Schedule {
 
   @ViewColumn()
   product: number;
+
+  @ViewColumn()
+  description: string;
 }

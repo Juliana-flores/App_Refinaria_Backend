@@ -1,22 +1,42 @@
 import type Cursor from "../database/cursor";
-import DriverRepository from "../repos/driverRepository";
-import * as express from 'express';
-import TruckRepository from "../repos/truckRepository";
+import type Env from "../config/env";
 
-import type { Router } from 'express'
-import UserController from "../controllers/userController";
-import Env from '../config/env';
+import {
+  DriverVehicleRepository,
+  ProfileRepository,
+  VehicleRepository,
+  DriverRepository,
+  TruckRepository,
+} from "../repos";
+
+import { UserService } from "../service/userService";
+
+import { UserController } from "../controllers";
+
+import { Router } from "express";
 
 export default (cursor: Cursor, env: typeof Env): Router => {
-    const { serverParams } = env;
-    const driverRepository = new DriverRepository(cursor);
-    const truckRepository = new TruckRepository(cursor);
-    const controller = new UserController(driverRepository, truckRepository, serverParams);
+  const { serverParams } = env;
 
-    const router = express.Router();
+  const driverVehicleRepository = new DriverVehicleRepository(cursor);
+  const profileRepository = new ProfileRepository(cursor);
+  const vehicleRepository = new VehicleRepository(cursor);
+  const driverRepository = new DriverRepository(cursor);
+  const truckRepository = new TruckRepository(cursor);
 
-    router.post('/login', controller.login.bind(controller))
+  const userService = new UserService({
+    driverVehicleRepository,
+    vehicleRepository,
+    profileRepository,
+    driverRepository,
+    truckRepository,
+  });
 
-    return router;
+  const controller = new UserController(userService, serverParams);
 
-}
+  const router = Router();
+
+  router.post("/login", controller.login.bind(controller));
+
+  return router;
+};
