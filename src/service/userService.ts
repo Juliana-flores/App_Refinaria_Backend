@@ -7,7 +7,9 @@ import type {
   TruckRepository,
 } from "../repos";
 
-import type { Profile, Truck, Vehicle } from "../models";
+import { distinctBy } from "../helpers/array";
+
+import { Profile, Truck, Vehicle } from "../models";
 
 interface UserServiceParams {
   driverVehicleRepository: DriverVehicleRepository;
@@ -76,7 +78,9 @@ export class UserService {
       return null;
     }
 
-    return this.truckRepository.createAndSaveMany(vehicles);
+    const trucks = distinctBy<Vehicle>(vehicles, "plateCarriage");
+
+    return this.truckRepository.createAndSaveMany(trucks);
   }
 
   async fetchVehicles(profile: Profile): Promise<Vehicle[]> {
