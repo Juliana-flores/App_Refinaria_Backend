@@ -1,5 +1,5 @@
 import { startOfDay, endOfDay } from "date-fns";
-import { Between, Equal, In } from "typeorm";
+import { Between, Equal, In, MoreThan, LessThan } from "typeorm";
 import type { Repository } from "typeorm";
 
 import TemplateRepository from "./templateRepository";
@@ -20,7 +20,7 @@ const Today =
    *
    * @function Today
    * @param {Date} date
-   * @returns {FindOperator<Date>}
+   * @returns {FindOperator<string>}
    */
   (date: Date) => Between(startOfDay(date), endOfDay(date));
 

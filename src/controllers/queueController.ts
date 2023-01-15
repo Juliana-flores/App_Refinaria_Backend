@@ -5,12 +5,9 @@ import type {
   QueueRepository,
   TruckRepository,
 } from "../repos";
+import type { NextFunction, Request, Response } from "express";
 
-import type { Request, Response } from "express";
-
-import { parse } from "date-fns";
-
-import type { Queue } from "../models";
+import { isWithinInterval, parse } from "date-fns";
 
 enum ErrorMessage {
   badRequest = "Parâmetros necessários: latitude, longitude e placa do caminhão.",
@@ -62,19 +59,20 @@ export default class QueueController {
       return response.status(400).send({ message: ErrorMessage.notFound });
     }
 
-    const timestamp = parse("12:00", "HH:mm", new Date());
+    const intervals = await this.timeRangeRepository.intervals();
 
+    const timestamp = parse("12:00", "HH:mm", new Date());
     //const timestamp = new Date();
 
-    const isWithinAnyInterval = await this.timeRangeRepository.intervals(
-      timestamp
+    const isWithinAnyInterval = intervals.some((interval) =>
+      isWithinInterval(timestamp, interval)
     );
 
     if (!isWithinAnyInterval) {
       return response.status(400).send({ message: ErrorMessage.outOfInterval });
     }
 
-    const currentDay = parse("21/06/2019", "dd/MM/yyyy", new Date());
+    const currentDay = parse("29/02/2020", "dd/MM/yyyy", new Date());
 
     const schedule = await this.scheduleRepository.findByPlateCarriage(
       plateCarriage,
@@ -85,16 +83,20 @@ export default class QueueController {
       return response.status(400).json({ message: ErrorMessage.outOfStock });
     }
 
-    const location = await this.locationRepository.createAndSave({
+    const location = await this.locationRepository.create({
       lon,
       lat,
     });
 
-    const { id: position }: Queue = await this.queueRepository.createAndSave({
+    await this.locationRepository.save(location);
+
+    const queueEntry = await this.queueRepository.create({
       timestamp,
       location,
       truck,
     });
+
+    const { id: position } = await this.queueRepository.save(queueEntry);
 
     const output = {
       position,

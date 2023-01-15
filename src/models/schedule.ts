@@ -1,7 +1,7 @@
 import { ViewEntity, ViewColumn } from "typeorm";
 
 export const availableProducts = [11, 17, 52];
-export const availableStatus = [7];
+export const availableStatus = [1];
 
 export const statusName = new Map([
   [1, "Agendado"],

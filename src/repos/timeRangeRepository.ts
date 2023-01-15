@@ -1,12 +1,11 @@
-import { isWithinInterval } from "date-fns";
+import type Cursor from "../database/cursor";
 import type { Repository } from "typeorm";
+
+import { TimeRange } from "../models";
 import { MoreThan } from "typeorm";
 import { parse } from "date-fns";
 
 import TemplateRepository from "./templateRepository";
-import type Cursor from "../database/cursor";
-
-import { TimeRange } from "../models";
 
 export default class TimeRangeRepository extends TemplateRepository<TimeRange> {
   repository: Repository<TimeRange>;
@@ -19,17 +18,15 @@ export default class TimeRangeRepository extends TemplateRepository<TimeRange> {
    * @function intervals
    * @returns {Interval[]}
    */
-  async intervals(timestamp: Date): Promise<boolean> {
-    const rawIntervals = await this.repository.find({
+  async intervals() {
+    const intervals = await this.repository.find({
       where: { id: MoreThan(1) },
     });
 
-    const intervals = rawIntervals.map((interval) => ({
+    return intervals.map((interval) => ({
       start: parse(interval.start, "HHmm", new Date()),
       end: parse(interval.end, "HHmm", new Date()),
       rawInterval: interval,
     }));
-
-    return intervals.some((interval) => isWithinInterval(timestamp, interval));
   }
 }
